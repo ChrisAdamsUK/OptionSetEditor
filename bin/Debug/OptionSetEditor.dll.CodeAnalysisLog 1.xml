@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="c:\program files (x86)\microsoft visual studio 14.0\team tools\static analysis tools\fxcop\Xml\CodeAnalysisReport.xsl"?>
+<FxCopReport Version="14.0">
+ <Targets>
+  <Target Name="C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll">
+   <Modules>
+    <Module Name="optionseteditor.dll">
+     <Namespaces>
+      <Namespace Name="OptionSetEditor">
+       <Types>
+        <Type Name="XrmOptionSetEditorControl" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Members>
+          <Member Name="#ExecuteMethod`1(System.Action`1&lt;!!0&gt;,!!0)" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
+           <Messages>
+            <Message TypeName="DoNotHideBaseClassMethods" Category="Microsoft.Design" CheckId="CA1061" Status="Active" Created="2018-08-20 14:14:25Z" FixCategory="Breaking">
+             <Issue Certainty="95" Level="CriticalWarning" Path="C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor" File="XrmOptionSetEditorControl.cs" Line="778">Change or remove 'XrmOptionSetEditorControl.ExecuteMethod&lt;T&gt;(Action&lt;T&gt;, T)' because it hides a more specific base class method: 'PluginControlBase.ExecuteMethod&lt;T&gt;(Action&lt;T&gt;, T)'.</Issue>
+            </Message>
+           </Messages>
+          </Member>
+         </Members>
+        </Type>
+       </Types>
+      </Namespace>
+     </Namespaces>
+    </Module>
+   </Modules>
+  </Target>
+ </Targets>
+ <Rules>
+  <Rule TypeName="DoNotHideBaseClassMethods" Category="Microsoft.Design" CheckId="CA1061">
+   <Name>Do not hide base class methods</Name>
+   <Description>Defining a method in a derived class with the same name and parameters that are more weakly typed as one that is defined in the base class will obstruct access to the method defined in the base class.</Description>
+   <Resolution Name="Default">Change or remove {0} because it hides a more specific base class method: {1}.</Resolution>
+   <Owner />
+   <Url>http://msdn.microsoft.com/library/ms182143.aspx</Url>
+   <Email>[none]</Email>
+   <MessageLevel Certainty="95">CriticalWarning</MessageLevel>
+   <File Name="designrules.dll" Version="14.0.0.0" />
+  </Rule>
+ </Rules>
+ <Localized>
+  <String Key="Category">Category</String>
+  <String Key="Certainty">Certainty</String>
+  <String Key="CollapseAll">Collapse All</String>
+  <String Key="CheckId">Check Id</String>
+  <String Key="Error">Error</String>
+  <String Key="Errors">error(s)</String>
+  <String Key="ExpandAll">Expand All</String>
+  <String Key="Help">Help</String>
+  <String Key="Line">Line</String>
+  <String Key="Messages">message(s)</String>
+  <String Key="LocationNotStoredInPdb">[Location not stored in Pdb]</String>
+  <String Key="Project">Project</String>
+  <String Key="Resolution">Resolution</String>
+  <String Key="Rule">Rule</String>
+  <String Key="RuleFile">Rule File</String>
+  <String Key="RuleDescription">Rule Description</String>
+  <String Key="Source">Source</String>
+  <String Key="Status">Status</String>
+  <String Key="Target">Target</String>
+  <String Key="Warning">Warning</String>
+  <String Key="Warnings">warning(s)</String>
+  <String Key="ReportTitle">Code Analysis Report</String>
+ </Localized>
+</FxCopReport>

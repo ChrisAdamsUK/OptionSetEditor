@@ -1,0 +1,65 @@
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll.config
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.pdb
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\McTools.Xrm.Connection.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\McTools.Xrm.Connection.WinForms.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Crm.Sdk.Proxy.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Rest.ClientRuntime.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Web.XmlTransform.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Deployment.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Workflow.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Tooling.Connector.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Newtonsoft.Json.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\NuGet.Core.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\WeifenLuo.WinFormsUI.Docking.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\XrmToolBox.exe
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\XrmToolBox.Extensibility.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\XrmToolBox.PluginsStore.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Crm.Sdk.Proxy.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.IdentityModel.Clients.ActiveDirectory.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Deployment.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Workflow.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Tooling.Connector.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\bin\Debug\Newtonsoft.Json.xml
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.dll
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.pdb
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.Properties.Resources.resources
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.XrmOptionSetEditorControl.resources
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.csproj.GenerateResource.Cache
+c:\users\a-chada\documents\visual studio 2015\Projects\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.csprojResolveAssemblyReference.cache
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll.config
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.pdb
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll.CodeAnalysisLog.xml
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\OptionSetEditor.dll.lastcodeanalysissucceeded
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\McTools.Xrm.Connection.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\McTools.Xrm.Connection.WinForms.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Crm.Sdk.Proxy.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Rest.ClientRuntime.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Web.XmlTransform.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Deployment.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Workflow.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Newtonsoft.Json.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\NuGet.Core.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\WeifenLuo.WinFormsUI.Docking.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\XrmToolBox.exe
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\XrmToolBox.Extensibility.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\XrmToolBox.PluginsStore.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.IdentityModel.Clients.ActiveDirectory.xml
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Deployment.xml
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Microsoft.Xrm.Sdk.Workflow.xml
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\bin\Debug\Newtonsoft.Json.xml
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.Properties.Resources.resources
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.XrmOptionSetEditorControl.resources
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.csproj.GenerateResource.Cache
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.dll
+C:\Users\a-chada\OneDrive\OptionSetEditor\OptionSetEditor\obj\Debug\OptionSetEditor.pdb
