@@ -17,14 +17,14 @@ namespace OptionSetEditor
     using XrmToolBox.Extensibility;
 
     /// <summary>
-    /// Partial class to publish the changed option sets.
+    /// Class to publish the changed option sets.
     /// </summary>
     public partial class XrmOptionSetEditorControl
     {
         /// <summary>
         /// The enumeration of operation.
         /// </summary>
-        private enum Operation
+        public enum Operation
         {
             /// <summary>
             /// Insert an option set item.
@@ -46,16 +46,15 @@ namespace OptionSetEditor
         /// Processes the fee type records to update the option set
         /// </summary>
         /// <param name="entities">The entity collection.</param>
-        internal void PublishOptions(IEnumerable<EntityItem> entities)
+        public void PublishOptions(IEnumerable<EntityItem> entities)
         {
             this.WorkAsync(new WorkAsyncInfo
             {
-                Message = "Publishing, please wait...",
+                Message = "Publishing please wait...",
                 Work = (w, e) =>
                 {
                     string message = string.Empty;
                     string caption = "Success";
-                    w.WorkerReportsProgress = true;
 
                     foreach (var entity in entities)
                     {
@@ -63,7 +62,7 @@ namespace OptionSetEditor
                         {
                             if (attribute.Children.Any(i => i.Label == null || string.IsNullOrWhiteSpace(i.Label.UserLocalizedLabel.Label)))
                             {
-                                message = "All items require a label";
+                                message = "\r\nAll items require a label";
                                 caption = "  Error";
                                 break;
                             }
@@ -72,10 +71,8 @@ namespace OptionSetEditor
 
                     if (string.IsNullOrWhiteSpace(message))
                     {
-                        message = "Publish Successful";
                         XmlDocument publishXml = new XmlDocument();
                         publishXml.LoadXml("<importexportxml></importexportxml>");
-                        int count = entities.Count() + 1;
 
                         ExecuteMultipleRequest batchRequest = new ExecuteMultipleRequest
                         {
@@ -92,8 +89,6 @@ namespace OptionSetEditor
                             foreach (var attribute in entity.Children.Where(c => c.Changed))
                             {
                                 OptionMetadata[] optionList;
-                                w.ReportProgress(100 / count, $"Creating {attribute.DisplayName}...");
-                                count--;
                                 if (attribute.Global)
                                 {
                                     AddNode(publishXml, attribute.GlobalName, true);
@@ -142,7 +137,7 @@ namespace OptionSetEditor
                                     batchRequest.Requests.Add(GetRequest(deletion, Operation.Delete));
                                 }
 
-                                foreach (EntityItem option in attribute.Children.Where(o => o.Changed))
+                                foreach (EntityItem option in attribute.Children.Where(c=>c.Changed))
                                 {
                                     OptionMetadata currentOption = optionList.Where(o => o.Value.Value == option.Value).FirstOrDefault();
 
@@ -162,7 +157,6 @@ namespace OptionSetEditor
                         batchRequest.Requests.Add(publish);
 
                         ExecuteMultipleResponse batchResults = (ExecuteMultipleResponse)this.Service.Execute(batchRequest);
-                        w.ReportProgress(100 / count, $"Publishing...");
 
                         foreach (var responseItem in batchResults.Responses)
                         {
@@ -171,6 +165,15 @@ namespace OptionSetEditor
                                 message += "\r\n" + batchRequest.Requests[responseItem.RequestIndex].RequestName + ": " + responseItem.Fault.Message;
                                 caption = "  Error";
                             }
+                        }
+
+                        if (string.IsNullOrWhiteSpace(message))
+                        {
+                            message = "Publish Successful";
+                        }
+                        else
+                        {
+                            message = message.Substring(2);
                         }
                     }
 

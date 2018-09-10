@@ -15,8 +15,13 @@ namespace OptionSetEditor
     /// <summary>
     /// Class to hold the entity item and it associated child option set attributes.
     /// </summary>
-    internal class EntityItem
+    public class EntityItem : IEquatable<EntityItem>
     {
+        /// <summary>
+        /// Backing field for the changed property.
+        /// </summary>
+        private bool changed;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityItem"/> class. 
         /// </summary>
@@ -26,7 +31,7 @@ namespace OptionSetEditor
         public EntityItem(string displayName, string logicalName, EntityItem parent = null)
         {
             this.Children = new List<EntityItem>();
-            this.Parent = parent; 
+            this.Parent = parent;
             this.DisplayName = displayName;
             this.LogicalName = logicalName;
         }
@@ -56,7 +61,22 @@ namespace OptionSetEditor
         /// <summary>
         /// Gets or sets a value indicating whether the item has changed.
         /// </summary>
-        public bool Changed { get; set; }
+        public bool Changed
+        {
+            get
+            {
+                return this.changed;
+            }
+
+            set
+            {
+                this.changed = value;
+                if (this.Parent != null && value)
+                {
+                    this.Parent.Changed = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the child items of this item.
@@ -121,7 +141,14 @@ namespace OptionSetEditor
         public override string ToString()
         {
             string display = this.Label != null && this.Label.UserLocalizedLabel != null ? this.Label.UserLocalizedLabel.Label : this.DisplayName;
-            display = (!string.IsNullOrWhiteSpace(this.Parent?.GlobalName) || !string.IsNullOrWhiteSpace(this.GlobalName) ? "*" : string.Empty) + display;
+            if (this.Value == 0 && !string.IsNullOrWhiteSpace(display))
+            {
+                string globalName = !string.IsNullOrWhiteSpace(this.Parent?.GlobalName) ?
+                    $" ({this.Parent?.GlobalName})" : !string.IsNullOrWhiteSpace(this.GlobalName) ?
+                    $" ({this.GlobalName})" : string.Empty;
+                display += globalName;
+            }
+
             return display;
         }
 
@@ -138,15 +165,26 @@ namespace OptionSetEditor
                 StringBuilder builder = new StringBuilder();
                 builder.AppendLine(child.Parent.Parent.LogicalName);
                 builder.AppendLine(child.Parent.LogicalName);
+                builder.AppendLine(child.Parent.GlobalName ?? string.Empty);
                 builder.AppendLine(child.Value.ToString());
                 foreach (var item in languages)
                 {
-                    builder.AppendLine(child.Label.LocalizedLabels.Select(l => l.LanguageCode).Contains(item) ? child.Label.LocalizedLabels.Where(l => l.LanguageCode == item).FirstOrDefault().Label : string.Empty);
+                    var line = child.Label.LocalizedLabels.Select(l => l.LanguageCode).Contains(item) ? child.Label.LocalizedLabels.Where(l => l.LanguageCode == item).FirstOrDefault().Label : string.Empty;
+                    if (line.Contains(","))
+                    {
+                        line = "\"" + line +"\"";
+                    }
+                    builder.AppendLine(line);
                 }
 
                 foreach (var item in languages)
                 {
-                    builder.AppendLine(child.Description.LocalizedLabels.Select(l => l.LanguageCode).Contains(item) ? child.Description.LocalizedLabels.Where(l => l.LanguageCode == item).FirstOrDefault().Label : string.Empty);
+                    var line = child.Description.LocalizedLabels.Select(l => l.LanguageCode).Contains(item) ? child.Description.LocalizedLabels.Where(l => l.LanguageCode == item).FirstOrDefault().Label : string.Empty;
+                    if (line.Contains(","))
+                    {
+                        line = "\"" + line + "\"";
+                    }
+                    builder.AppendLine(line);
                 }
 
                 csv.Append(string.Join(",", builder.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None)));
@@ -155,6 +193,28 @@ namespace OptionSetEditor
             }
 
             return csv.ToString();
+        }
+
+        public bool Equals(EntityItem other)
+        {
+            bool same = true;
+            if (other == null)
+            {
+                same = false;
+            }
+            else
+            {
+                foreach (var otherLabel in other.Label.LocalizedLabels)
+                {
+                    var localizedLabel = this.Label.LocalizedLabels.Where(l => l.LanguageCode == otherLabel.LanguageCode).FirstOrDefault();
+                    if (localizedLabel == null || localizedLabel.Label != otherLabel.Label)
+                    {
+                        same = false;
+                        break;
+                    }
+                }
+            }
+            return same;
         }
     }
 }

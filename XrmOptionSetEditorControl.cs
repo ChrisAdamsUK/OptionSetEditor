@@ -12,12 +12,10 @@ namespace OptionSetEditor
     using System.Data;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using System.Windows.Forms;
     using Microsoft.Crm.Sdk.Messages;
     using Microsoft.Xrm.Sdk;
-    using Microsoft.Xrm.Sdk.Messages;
-    using Microsoft.Xrm.Sdk.Metadata;
-    using Microsoft.Xrm.Sdk.Query;
     using Newtonsoft.Json;
     using XrmToolBox.Extensibility;
     using XrmToolBox.Extensibility.Interfaces;
@@ -25,7 +23,7 @@ namespace OptionSetEditor
     /// <summary>
     /// Class to host the option set editor control.
     /// </summary>
-    public partial class XrmOptionSetEditorControl : PluginControlBase, IPayPalPlugin
+    public partial class XrmOptionSetEditorControl : PluginControlBase, IPayPalPlugin, IGitHubPlugin
     {
         /// <summary>
         /// List of installed languages on the CRM.
@@ -78,9 +76,50 @@ namespace OptionSetEditor
         }
 
         /// <summary>
+        /// Gets the repository name.
+        /// </summary>
+        public string RepositoryName
+        {
+            get
+            {
+                return "OptionSetEditor";
+            }
+        }
+
+        /// <summary>
+        /// Gets the user name.
+        /// </summary>
+        public string UserName
+        {
+            get
+            {
+                return "ChrisAdamsUK";
+            }
+        }
+
+        /// <summary>
+        /// Gets the current value of the option.
+        /// </summary>
+        public string CurrentValue { get; private set; }
+
+        /// <summary>
         /// Gets or sets the default language of the current CRM user.
         /// </summary>
         private int DefaultLanguage { get; set; }
+
+        /// <summary>
+        /// Displays an error dialog.
+        /// </summary>
+        /// <param name="title">The dialog title.</param>
+        /// <param name="e">The exception.</param>
+        /// <returns>The dialog response.</returns>
+        private static DialogResult ShowThreadExceptionDialog(string title, Exception e)
+        {
+            string errorMsg = "An application error occurred. Please contact the adminstrator " +
+                "with the following information:\n\n";
+            errorMsg = errorMsg + e.Message + "\n\nStack Trace:\n" + e.StackTrace;
+            return System.Windows.Forms.MessageBox.Show(errorMsg, title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Stop);
+        }
 
         /// <summary>
         /// Event when the user selects to open all entities.
@@ -90,6 +129,7 @@ namespace OptionSetEditor
         private void AllEntitiesMenu_Click(object sender, EventArgs e)
         {
             this.GetSolutionEntities("default");
+            this.PublishMenu.Enabled = false;
         }
 
         /// <summary>
@@ -99,54 +139,24 @@ namespace OptionSetEditor
         /// <param name="e">Event arguments.</param>
         private void EntitiesList_SelectedValueChanged(object sender, EventArgs e)
         {
-            OptionSetList.DataSource = null;
+            AttributesList.DataSource = null;
             EntityItem currentItem = (EntityItem)EntitiesList.SelectedItem;
+
             if (!currentItem.Loaded)
             {
                 this.ExecuteMethod<EntityItem>(this.GetAttributes, currentItem);
             }
             else
             {
-                OptionSetList.DataSource = new BindingList<EntityItem>(currentItem.Children.ToArray());
+                AttributesList.DataSource = new BindingList<EntityItem>(currentItem.Children.ToArray());
                 ImportMenu.Enabled = true;
+                ExportMenu.Enabled = true;
             }
-        }
 
-        /// <summary>
-        /// Gets the attributes for the selected entity from CRM.
-        /// </summary>
-        /// <param name="entity">The entity whose attributes are to be retrieved.</param>
-        private void GetAttributes(EntityItem entity)
-        {
-            this.WorkAsync(new WorkAsyncInfo
+            if (OptionsList.SelectedItem == null)
             {
-                Message = "Retrieving option attributes...",
-                Work = (w, e) =>
-                {
-                    var request = new RetrieveEntityRequest
-                    {
-                        LogicalName = entity.LogicalName,
-                        EntityFilters = EntityFilters.Attributes
-                    };
-                    var response = (RetrieveEntityResponse)Service.Execute(request);
-
-                    e.Result = response.EntityMetadata;
-                },
-                PostWorkCallBack = e =>
-                {
-                    AttributeMetadata[] results = ((EntityMetadata)e.Result).Attributes;
-                    entity.Children = new List<EntityItem>();
-                    entity.Children.AddRange(results.Where(r => r.AttributeType == AttributeTypeCode.Picklist && r.DisplayName.UserLocalizedLabel != null).Select(r => new EntityItem(r.DisplayName.UserLocalizedLabel.Label, r.LogicalName, entity)));
-                    OptionSetList.DataSource = new BindingList<EntityItem>(entity.Children.ToArray());
-
-                    entity.Loaded = true;
-                    ImportMenu.Enabled = true;
-                },
-                AsyncArgument = null,
-                IsCancelable = true,
-                MessageWidth = 340,
-                MessageHeight = 150
-            });
+                this.ShowLabels(false);
+            }
         }
 
         /// <summary>
@@ -154,11 +164,11 @@ namespace OptionSetEditor
         /// </summary>
         /// <param name="sender">Sender argument.</param>
         /// <param name="e">Event arguments.</param>
-        private void OptionSetList_SelectedValueChanged(object sender, EventArgs e)
+        private void AttributesList_SelectedValueChanged(object sender, EventArgs e)
         {
             OptionsList.DataSource = null;
             EntityItem currentEntity = (EntityItem)EntitiesList.SelectedItem;
-            EntityItem currentAttribute = (EntityItem)OptionSetList.SelectedItem;
+            EntityItem currentAttribute = (EntityItem)AttributesList.SelectedItem;
             if (currentAttribute != null)
             {
                 if (!currentAttribute.Loaded)
@@ -168,84 +178,38 @@ namespace OptionSetEditor
                 else
                 {
                     OptionsList.DataSource = new BindingList<EntityItem>(currentAttribute.Children);
-                    GlobalLabel.Visible = currentAttribute.Global;
                 }
 
-                AddButton.Enabled = OptionSetList.SelectedIndex > -1;
+                if (OptionsList.SelectedItem == null)
+                {
+                    if (AttributesList.SelectedItem != null)
+                    {
+                        this.ShowLabels(false);
+                    }
+                    else
+                    {
+                        this.ShowLabels(false);
+                    }
+                }
+
+                AddButton.Enabled = AttributesList.SelectedIndex > -1 && OptionsList.Items.Count < 300;
             }
         }
 
         /// <summary>
-        /// Retrieves the options from CRM for the selected attribute.
+        /// Shows/Hides the label elements.
         /// </summary>
-        /// <param name="attribute">The attribute whose options are to be retrieved.</param>
-        private void GetOptions(EntityItem attribute)
+        /// <param name="display">Whether the controls are displayed.</param>
+        private void ShowLabels(bool display)
         {
-            this.WorkAsync(new WorkAsyncInfo
-            {
-                Message = "Retrieving options...",
-                Work = (w, e) =>
-                {
-                    var request = new RetrieveAttributeRequest
-                    {
-                        EntityLogicalName = attribute.Parent.LogicalName,
-                        LogicalName = attribute.LogicalName,
-                        RetrieveAsIfPublished = true
-                    };
-                    var response = (RetrieveAttributeResponse)Service.Execute(request);
-
-                    var attributeMetadata = (EnumAttributeMetadata)response.AttributeMetadata;
-
-                    e.Result = attributeMetadata.OptionSet;
-                },
-                PostWorkCallBack = e =>
-                {
-                    OptionSetMetadata optionset = (OptionSetMetadata)e.Result;
-                    attribute.GlobalName = optionset.IsGlobal.GetValueOrDefault() ? optionset.Name : null;
-
-                    if (attribute.Global)
-                    {
-                        GlobalLabel.Text = "* Global Option Set = " + attribute.GlobalName;
-                        foreach (var item in EntitiesList.Items.Cast<EntityItem>())
-                        {
-                            var existing = item.Children.Where(i => i.GlobalName == attribute.GlobalName && i.LogicalName != attribute.LogicalName && i.Parent.LogicalName != attribute.Parent.LogicalName);
-                            if (existing.Count() > 0)
-                            {
-                                attribute.Children.AddRange(existing.First().Children);
-                                attribute.Loaded = true;
-                                OptionsList.DataSource = new BindingList<EntityItem>(attribute.Children);
-                                OptionSetList.DataSource = null;
-                                OptionSetList.DataSource = new BindingList<EntityItem>(attribute.Parent.Children.ToArray());
-                                return;
-                            }
-                        }
-                    }
-
-                    attribute.Children = new List<EntityItem>();
-                    attribute.Children.AddRange(optionset.Options.Select(r => new EntityItem(r.Value.GetValueOrDefault(), r.Label, r.Description, attribute)));
-
-                    Loading = true;
-                    OptionsList.DataSource = new BindingList<EntityItem>(attribute.Children);
-                    Loading = false;
-
-                    attribute.Loaded = true;
-
-                    if (attribute.Global)
-                    {
-                        OptionSetList.DataSource = null;
-                        OptionSetList.DataSource = new BindingList<EntityItem>(attribute.Parent.Children.ToArray());
-                        GlobalLabel.Visible = true;
-                    }
-                    else
-                    {
-                        GlobalLabel.Visible = false;
-                    }
-                },
-                AsyncArgument = null,
-                IsCancelable = true,
-                MessageWidth = 340,
-                MessageHeight = 150
-            });
+            LabelsGroup.Visible = display;
+            DescriptionsGroup.Visible = display;
+            ValueText.Visible = display;
+            ValueLabel.Visible = display;
+            UpButton.Visible = display;
+            DownButton.Visible = display;
+            AddButton.Visible = display || AttributesList.SelectedItem != null;
+            DeleteButton.Visible = display;
         }
 
         /// <summary>
@@ -255,7 +219,7 @@ namespace OptionSetEditor
         {
             this.WorkAsync(new WorkAsyncInfo
             {
-                Message = "Retrieving ...",
+                Message = "Retrieving languages...",
                 Work = (w, e) =>
                 {
                     if (installedLanguages == null)
@@ -301,6 +265,7 @@ namespace OptionSetEditor
             {
                 EntityItem currentOption = (EntityItem)OptionsList.SelectedItem;
                 ValueText.DataBindings.Clear();
+                this.Loading = true;
                 this.ValueText.DataBindings.Add(
                     "Text",
                     currentOption,
@@ -310,6 +275,8 @@ namespace OptionSetEditor
                 this.LoadLabels(this.LabelsGroup, currentOption.Label);
                 DescriptionsGroup.Top = LabelsGroup.Top + LabelsGroup.Height + 30;
                 this.LoadLabels(this.DescriptionsGroup, currentOption.Description);
+                this.CurrentValue = ValueText.Text;
+                this.Loading = false;
             }
 
             this.ShowArrows(OptionsList.SelectedIndex, OptionsList.Items.Count);
@@ -354,7 +321,10 @@ namespace OptionSetEditor
                 text.Top = top + 15;
                 text.Left = left;
                 text.Width = 150;
+                text.MaxLength = 255;
                 text.Tag = optionLabel;
+                ToolTip toolTip = new ToolTip();
+                toolTip.SetToolTip(text, $"{label.Text} translation for the option.");
                 text.Name = "L" + this.DefaultLanguage.ToString();
                 text.TextChanged += this.LabelChanged;
                 if (this.DefaultLanguage != 0 && !group.Name.ToLower().Contains("description"))
@@ -383,9 +353,12 @@ namespace OptionSetEditor
                         text.Top = top + 15;
                         text.Left = left;
                         text.Width = 150;
+                        text.MaxLength = 255;
                         text.Tag = optionLabel;
                         text.Name = " " + item.Key.ToString();
                         text.TextChanged += this.LabelChanged;
+                        toolTip = new ToolTip();
+                        toolTip.SetToolTip(text, $"{label.Text} translation for the option.");
                         group.Controls.Add(text);
                         top += 48;
                     }
@@ -394,10 +367,7 @@ namespace OptionSetEditor
                 group.Height = top;
             }
 
-            LabelsGroup.Visible = true;
-            DescriptionsGroup.Visible = true;
-            ValueText.Visible = true;
-            ValueLabel.Visible = true;
+            this.ShowLabels(true);
         }
 
         /// <summary>
@@ -432,32 +402,9 @@ namespace OptionSetEditor
                 localLabel.Label = textBox.Text;
             }
 
-            this.SetChanged((EntityItem)OptionsList.SelectedItem);
+            ((EntityItem)OptionsList.SelectedItem).Changed = true;
             ExportMenu.Enabled = true;
             PublishMenu.Enabled = true;
-        }
-
-        /// <summary>
-        /// Sets the current option and it's parents to changed.
-        /// </summary>
-        /// <param name="item">The item being changed.</param>
-        private void SetChanged(EntityItem item)
-        {
-            item.Changed = true;
-            item.Parent.Changed = true;
-            item.Parent.Parent.Changed = true;
-        }
-
-        /// <summary>
-        /// Event when the export menu is clicked.
-        /// </summary>
-        /// <param name="sender">Sender argument.</param>
-        /// <param name="e">Event arguments.</param>
-        private void ExportMenu_Click(object sender, EventArgs e)
-        {
-            saveFileDialog1.Filter = "CSV|*.csv";
-            saveFileDialog1.RestoreDirectory = true;
-            saveFileDialog1.ShowDialog();
         }
 
         /// <summary>
@@ -467,9 +414,9 @@ namespace OptionSetEditor
         /// <param name="e">Event arguments.</param>
         private void ImportMenu_Click(object sender, EventArgs e)
         {
-            openFileDialog1.Filter = "CSV|*.csv";
-            openFileDialog1.RestoreDirectory = true;
-            openFileDialog1.ShowDialog();
+            openFileDialog.Filter = "CSV|*.csv";
+            openFileDialog.RestoreDirectory = true;
+            openFileDialog.ShowDialog();
         }
 
         /// <summary>
@@ -479,8 +426,24 @@ namespace OptionSetEditor
         /// <param name="ev">Cancel event arguments.</param>
         private void SaveFileDialog_FileOk(object sender, CancelEventArgs ev)
         {
-            var items = EntitiesList.Items.Cast<EntityItem>().Where(e => e.Changed);
-            File.WriteAllText(saveFileDialog1.FileName, ImportExport.Export(items, this.installedLanguages));
+            IEnumerable<EntityItem> items = null;
+            if (saveFileDialog.Tag.ToString() == "ALL")
+            {
+                items = AttributesList.Items.Cast<EntityItem>();
+            }
+            else
+            {
+                items = AttributesList.Items.Cast<EntityItem>().Where(e => e.Changed);
+            }
+
+            if (items.Count() != 0)
+            {
+                File.WriteAllText(saveFileDialog.FileName, this.Export(items, this.installedLanguages));
+            }
+            else
+            {
+                MessageBox.Show("There a no items to export", "Export");
+            }
         }
 
         /// <summary>
@@ -490,10 +453,11 @@ namespace OptionSetEditor
         /// <param name="e">Event arguments.</param>
         private void OpenFileDialog_FileOk(object sender, CancelEventArgs e)
         {
-            ImportExport.Import(openFileDialog1.FileName, EntitiesList.Items.Cast<EntityItem>(), this.installedLanguages);
-            if (OptionSetList.SelectedItem != null)
+            this.Import(openFileDialog.FileName, (EntityItem)EntitiesList.SelectedItem, this.installedLanguages);
+            PublishMenu.Enabled = true;
+            if (AttributesList.SelectedItem != null)
             {
-                OptionsList.DataSource = new BindingList<EntityItem>(((EntityItem)OptionSetList.SelectedItem).Children);
+                OptionsList.DataSource = new BindingList<EntityItem>(((EntityItem)AttributesList.SelectedItem).Children);
             }
         }
 
@@ -504,7 +468,9 @@ namespace OptionSetEditor
         /// <param name="e">Event arguments.</param>
         private void DeleteButton_Click(object sender, EventArgs e)
         {
+            ((EntityItem)OptionsList.SelectedItem).Parent.Changed = true;
             ((BindingList<EntityItem>)OptionsList.DataSource).Remove((EntityItem)OptionsList.SelectedItem);
+            PublishMenu.Enabled = true;         
         }
 
         /// <summary>
@@ -526,8 +492,9 @@ namespace OptionSetEditor
             int newIndex = OptionsList.SelectedIndex + direction;
 
             EntityItem selected = OptionsList.SelectedItem as EntityItem;
-            ((EntityItem)OptionSetList.SelectedItem).Children.RemoveAt(OptionsList.SelectedIndex);
-            ((EntityItem)OptionSetList.SelectedItem).Children.Insert(newIndex, selected);
+            ((EntityItem)AttributesList.SelectedItem).Children.RemoveAt(OptionsList.SelectedIndex);
+            ((EntityItem)AttributesList.SelectedItem).Children.Insert(newIndex, selected);
+            ((EntityItem)AttributesList.SelectedItem).Changed = true;
 
             OptionsList.SetSelected(newIndex, true);
         }
@@ -561,7 +528,7 @@ namespace OptionSetEditor
             Microsoft.Xrm.Sdk.Label description = new Microsoft.Xrm.Sdk.Label(new LocalizedLabel(string.Empty, this.DefaultLanguage), localDescriptions);
 
             int currentValue = 0;
-            var currentItem = (EntityItem)OptionSetList.SelectedItem;
+            var currentItem = (EntityItem)AttributesList.SelectedItem;
             for (int i = this.OptionSetPrefix * 10000; i < (this.OptionSetPrefix * 10000) + 9999; i++)
             {
                 if (!currentItem.Children.Exists(c => c.Value == i))
@@ -574,8 +541,12 @@ namespace OptionSetEditor
             EntityItem item = new EntityItem(currentValue, label, description, currentItem);
 
             currentItem.Children.Add(item);
-            OptionsList.DataSource = new BindingList<EntityItem>(((EntityItem)OptionSetList.SelectedItem).Children);
+            OptionsList.DataSource = new BindingList<EntityItem>(((EntityItem)AttributesList.SelectedItem).Children);
             OptionsList.SelectedItem = item;
+            AddButton.Enabled = AttributesList.SelectedIndex > -1 && OptionsList.Items.Count < 300;
+            item.Changed = true;
+            item.Parent.Changed = true;
+            PublishMenu.Enabled = true;
         }
 
         /// <summary>
@@ -586,7 +557,7 @@ namespace OptionSetEditor
         private void Label_Leave(object sender, EventArgs e)
         {
             var selected = OptionsList.SelectedItem;
-            OptionsList.DataSource = new BindingList<EntityItem>(((EntityItem)OptionSetList.SelectedItem).Children);
+            OptionsList.DataSource = new BindingList<EntityItem>(((EntityItem)AttributesList.SelectedItem).Children);
             OptionsList.SelectedItem = selected;
             var current = this.ActiveControl;
             current.Focus();
@@ -599,15 +570,40 @@ namespace OptionSetEditor
         /// <param name="e">Event arguments.</param>
         private void List_MouseMove(object sender, MouseEventArgs e)
         {
-            string toolTip = string.Empty;
+            string toolTipText = string.Empty;
             System.Windows.Forms.ListBox list = (System.Windows.Forms.ListBox)sender;
             int index = list.IndexFromPoint(e.Location);
             if ((index >= 0) && (index < list.Items.Count))
             {
-                toolTip = ((EntityItem)list.Items[index]).LogicalName;
-            }
+                EntityItem item = (EntityItem)list.Items[index];
 
-            toolTip1.SetToolTip(list, toolTip);
+                if (!string.IsNullOrWhiteSpace(item?.Parent?.GlobalName))
+                {
+                    toolTipText += $"Global optionset\t= {item.Parent.GlobalName}\r\n";
+                }
+
+                if (!string.IsNullOrWhiteSpace(item?.GlobalName))
+                {
+                    toolTipText += $"Global optionset\t= {item.GlobalName}\r\n";
+                }
+
+                toolTipText += $"Disaplay Name\t= {item.DisplayName}\r\n";
+
+                if (item.Value == 0)
+                {
+                    toolTipText += $"Logical Name\t= {item.LogicalName}\r\n";
+                }
+                else
+                {
+                    toolTipText += $"Description\t= {item?.Description?.LocalizedLabels.Where(l => l.LanguageCode == DefaultLanguage).FirstOrDefault()?.Label}\r\n";
+                    toolTipText += $"Value\t\t= {item.Value}";
+                }
+
+                if (this.toolTip.GetToolTip(list) != toolTipText)
+                {
+                    toolTip.SetToolTip(list, toolTipText);
+                }
+            }
         }
 
         /// <summary>
@@ -618,6 +614,7 @@ namespace OptionSetEditor
         private void PublishButton_Click(object sender, EventArgs e)
         {
             this.PublishOptions(EntitiesList.Items.Cast<EntityItem>().Where(c => c.Changed));
+            this.PublishMenu.Enabled = false;
         }
 
         /// <summary>
@@ -629,6 +626,7 @@ namespace OptionSetEditor
         {
             ToolStripMenuItem menu = sender as ToolStripMenuItem;
             this.GetSolutionEntities(menu.Name, Guid.Parse(menu.Tag.ToString()));
+            this.PublishMenu.Enabled = false;
         }
 
         /// <summary>
@@ -648,10 +646,111 @@ namespace OptionSetEditor
         /// <param name="e">Event arguments.</param>
         private void ValueText_TextChanged(object sender, EventArgs e)
         {
-            if (!this.Loading)
+            int value = 0;
+            if (int.TryParse(ValueText.Text, out value) && value != 2147483647)
             {
-                this.SetChanged((EntityItem)OptionsList.SelectedItem);
+                if (!this.Loading)
+                {
+                    ((EntityItem)OptionsList.SelectedItem).Changed = true;
+                }
+
+                this.CurrentValue = ValueText.Text;
             }
+            else
+            {
+                MessageBox.Show("Only whole numbers up to 2,147,483,646 are allowed");
+                ValueText.Text = this.CurrentValue;
+            }
+        }
+
+        /// <summary>
+        /// Event on key press of value text box to ensure only digits are entered.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void ValueText_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Sets up the error handling on load.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void XrmOptionSetEditorControl_Load(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Application.ThreadException += new ThreadExceptionEventHandler(this.Form_UIThreadException);
+        }
+
+        /// <summary>
+        /// Event when the close button is clicked.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void CloseMenu_Click(object sender, EventArgs e)
+        {
+            this.CloseTool();
+        }
+
+        /// <summary>
+        /// Handle the UI exceptions by showing a dialog box, and asking the user whether
+        /// or not they wish to abort execution
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="t">The event arguments.</param>
+        private void Form_UIThreadException(object sender, ThreadExceptionEventArgs t)
+        {
+            DialogResult result = DialogResult.Cancel;
+            try
+            {
+                result = ShowThreadExceptionDialog("Windows Forms Error", t.Exception);
+            }
+            catch
+            {
+                try
+                {
+                    System.Windows.Forms.MessageBox.Show("Fatal Windows Forms Error", "Fatal Windows Forms Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Stop);
+                }
+                finally
+                {
+                    this.CloseTool();
+                }
+            }
+
+            if (result == DialogResult.Abort)
+            {
+                this.CloseTool();
+            }
+        }
+
+        /// <summary>
+        /// Event when the export all menu is clicked.
+        /// </summary>
+        /// <param name="sender">Sender argument.</param>
+        /// <param name="e">Event arguments.</param>
+        private void ExportAllMenu_Click(object sender, EventArgs e)
+        {
+            saveFileDialog.Filter = "CSV|*.csv";
+            saveFileDialog.RestoreDirectory = true;
+            saveFileDialog.Tag = "ALL";
+            saveFileDialog.ShowDialog();
+        }
+
+        /// <summary>
+        /// Event when the export changed menu is clicked.
+        /// </summary>
+        /// <param name="sender">Sender argument.</param>
+        /// <param name="e">Event arguments.</param>
+        private void ExportChangedMenu_Click(object sender, EventArgs e)
+        {
+            saveFileDialog.Filter = "CSV|*.csv";
+            saveFileDialog.RestoreDirectory = true;
+            saveFileDialog.Tag = "CHG";
+            saveFileDialog.ShowDialog();
         }
     }
 }

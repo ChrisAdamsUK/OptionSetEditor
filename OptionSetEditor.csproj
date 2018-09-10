@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="McTools.Xrm.Connection, Version=1.2018.6.17, Culture=neutral, PublicKeyToken=96037217801d9658, processorArchitecture=MSIL">
@@ -61,10 +62,6 @@
     </Reference>
     <Reference Include="Microsoft.Xrm.Sdk">
       <HintPath>..\..\..\Documents\DED\DED.CRM\References\V9\Microsoft.Xrm.Sdk.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xrm.Sdk.Deployment, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CrmSdk.Deployment.9.0.2.3\lib\net452\Microsoft.Xrm.Sdk.Deployment.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Xrm.Sdk.Workflow, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CrmSdk.Workflow.9.0.2.3\lib\net452\Microsoft.Xrm.Sdk.Workflow.dll</HintPath>
@@ -131,7 +128,9 @@
     </Compile>
     <Compile Include="EntityItem.cs" />
     <Compile Include="EntityItemCompare.cs" />
-    <Compile Include="ImportExport.cs" />
+    <Compile Include="ImportExport.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="OptionSetPublisher.cs">
       <SubType>UserControl</SubType>
     </Compile>
