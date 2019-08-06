@@ -42,7 +42,10 @@ namespace OptionSetEditor
                 },
                 PostWorkCallBack = e =>
                 {
-                    EntitiesList.DataSource = new BindingList<EntityItem>(((EntityMetadata[])e.Result).Where(i => i.IsCustomizable.Value && i.DisplayName.UserLocalizedLabel != null).Select(i => new EntityItem(i.DisplayName.UserLocalizedLabel.Label, i.LogicalName)).ToList());
+                   EntitiesList.DataSource = new BindingList<EntityItem>(((EntityMetadata[])e.Result).Where(i =>
+                   (!i.IsManaged.Value || (i.IsManaged.Value && i.IsCustomizable.Value)) && 
+                   i.DisplayName.UserLocalizedLabel != null).Select(i => new EntityItem(i.DisplayName.UserLocalizedLabel.Label, i.LogicalName)).ToList());
+
                 },
                 AsyncArgument = null,
                 IsCancelable = true,
